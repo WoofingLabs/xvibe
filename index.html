@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Layer Vibe</title>
+    <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1f1f1f;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #cccccc;
+        }
+        select {
+            width: 100%;
+            height: 36px;
+            padding: 8px;
+            border: 1px solid #555;
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        select:hover {
+            border-color: #ffd700;
+        }
+        select option {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+        button {
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #1a1a1a;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.3s;
+        }
+        button:hover {
+            background: linear-gradient(45deg, #ffaa00, #ffd700);
+            transform: scale(1.05);
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+            color: #ff5555;
+        }
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        #gridCanvas {
+            width: 100%;
+            max-width: 320px;
+            height: 320px;
+            display: block;
+            margin: 0 auto 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .nft-viewer {
+            margin-top: 30px;
+        }
+        .nft-viewer h2 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+        #nftList {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+        .nft-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .nft-card:hover {
+            transform: translateY(-5px);
+        }
+        .nft-card img {
+            width: 100%;
+            max-width: 140px;
+            height: auto;
+            border-radius: 6px;
+            border: 1px solid #ffd700;
+        }
+        .nft-card p {
+            font-size: 13px;
+            margin: 8px 0;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>X Layer Vibe</h1>
+        <div class="section">
+            <button id="connectWallet">Connect Wallet</button>
+            <div id="walletStatus" class="status">Not Connected</div>
+        </div>
+        <div class="section">
+            <canvas id="gridCanvas" width="320" height="320"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="centerColor">Soil Type (3,3)</label>
+                    <select id="centerColor" onchange="updateGrid()">
+                        <option value="#3C2F2F">Fertile Loam</option>
+                        <option value="#4A3728">Volcanic Ash</option>
+                        <option value="#5C4033">Red Clay</option>
+                        <option value="#6B4E31">Sandy Loam</option>
+                        <option value="#8A5522">Desert Soil</option>
+                        <option value="#A0522D">Sienna Earth</option>
+                        <option value="#704214">Ochre Bed</option>
+                        <option value="#4F2F1F">Peat Moss</option>
+                        <option value="#3F2A1D">Black Loam</option>
+                        <option value="#7B3F00">Tundra Soil</option>
+                        <option value="#8B5A2B">Savanna Dust</option>
+                        <option value="#A67B5B">Arid Crust</option>
+                        <option value="#4B2E1A">Mudflat Clay</option>
+                        <option value="#6D4C41">Laterite</option>
+                        <option value="#8D5524">Chalky Soil</option>
+                        <option value="#3E2C1C">Silt Bed</option>
+                        <option value="#5B3A29">Loess Layer</option>
+                        <option value="#7A4F2A">Podzol</option>
+                        <option value="#9C6B4E">Terra Rossa</option>
+                        <option value="#4A2F1B">Bog Soil</option>
+                        <option value="#6C4A2F">Marsh Mud</option>
+                        <option value="#8B5F3D">Alluvial Soil</option>
+                        <option value="#3B2A1A">Humus Layer</option>
+                        <option value="#5A3C2B">Gritty Loam</option>
+                        <option value="#7C4D2E">Clay Loam</option>
+                        <option value="#9B6A3F">Sandy Clay</option>
+                        <option value="#4C3A28">Rocky Soil</option>
+                        <option value="#6E4B2C">Gravel Bed</option>
+                        <option value="#8C5E3A">Silty Clay</option>
+                        <option value="#3D2B1C">Topsoil</option>
+                        <option value="#5C3E2A">Subsoil</option>
+                        <option value="#7E4F2D">Regolith</option>
+                        <option value="#9D6C3E">Iron Soil</option>
+                        <option value="#4D3B29">Salty Crust</option>
+                        <option value="#6F4C2B">Alkaline Soil</option>
+                        <option value="#8E5F3C">Calcareous Soil</option>
+                        <option value="#3E2C1D">Organic Soil</option>
+                        <option value="#5D3F2B">Mineral Soil</option>
+                        <option value="#7F502E">Fossil Bed</option>
+                        <option value="#9E6D3F">Eroded Soil</option>
+                        <option value="#8B4513">Saddle Brown</option>
+                        <option value="#D2691E">Chocolate</option>
+                        <option value="#A52A2A">Brown</option>
+                        <option value="#F4A460">Sandy Brown</option>
+                        <option value="#DEB887">Burly Wood</option>
+                        <option value="#CD853F">Peru</option>
+                        <option value="#BC8F8F">Rosy Brown</option>
+                        <option value="#8B5A2B">Tan</option>
+                        <option value="#D2B48C">Wheat</option>
+                        <option value="#DAA520">Golden Rod</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="corner1Color">Guardian Pet (2,2)</label>
+                    <select id="corner1Color" onchange="updateGrid()">
+                        <option value="#FF0000">Mystic Wolf</option>
+                        <option value="#FF4500">Desert Scorpion</option>
+                        <option value="#FF6347">Crimson Hawk</option>
+                        <option value="#DC143C">Sand Serpent</option>
+                        <option value="#FF8C00">Ember Fox</option>
+                        <option value="#FFA500">Coral Viper</option>
+                        <option value="#FF7F50">Blood Panther</option>
+                        <option value="#FF4040">Dune Lizard</option>
+                        <option value="#CD5C5C">Fire Beetle</option>
+                        <option value="#FF3030">Ashen Owl</option>
+                        <option value="#E9967A">Sable Jackal</option>
+                        <option value="#FA8072">Copper Cobra</option>
+                        <option value="#F08080">Flame Raven</option>
+                        <option value="#FF8247">Saffron Falcon</option>
+                        <option value="#FF3C3C">Ruby Gecko</option>
+                        <option value="#FF5C5C">Obsidian Wolf</option>
+                        <option value="#FF6A6A">Quartz Scorpion</option>
+                        <option value="#FF7F24">Garnet Hawk</option>
+                        <option value="#FF4500">Topaz Serpent</option>
+                        <option value="#FF6347">Citrine Fox</option>
+                        <option value="#DC143C">Opal Viper</option>
+                        <option value="#FF8C00">Onyx Panther</option>
+                        <option value="#FFA07A">Agate Lizard</option>
+                        <option value="#FF7F50">Jasper Beetle</option>
+                        <option value="#FF4040">Amber Owl</option>
+                        <option value="#CD5C5C">Corundum Jackal</option>
+                        <option value="#FF3030">Turquoise Cobra</option>
+                        <option value="#E9967A">Amethyst Raven</option>
+                        <option value="#FA8072">Peridot Falcon</option>
+                        <option value="#FF8247">Carnelian Gecko</option>
+                        <option value="#FF3C3C">Jet Wolf</option>
+                        <option value="#FF5C5C">Malachite Scorpion</option>
+                        <option value="#FF6A6A">Hematite Hawk</option>
+                        <option value="#FF7F24">Zircon Serpent</option>
+                        <option value="#FF4500">Spinel Fox</option>
+                        <option value="#FF69B4">Aquamarine Viper</option>
+                        <option value="#FF1493">Beryl Panther</option>
+                        <option value="#C71585">Chalcedony Lizard</option>
+                        <option value="#DB7093">Sardonyx Beetle</option>
+                        <option value="#FF00FF">Moonstone Owl</option>
+                        <option value="#FFB6C1">Red Phoenix</option>
+                        <option value="#FF69B4">Pink Dragon</option>
+                        <option value="#FF1493">Dark Ruby</option>
+                        <option value="#C71585">Blaze Tiger</option>
+                        <option value="#DB7093">Salmon Serpent</option>
+                        <option value="#FF00FF">Rose Falcon</option>
+                        <option value="#FFB6C1">Pale Coral</option>
+                        <option value="#FF69B4">Magenta Wyrm</option>
+                        <option value="#FF1493">Deep Pink</option>
+                        <option value="#C71585">Fuchsia Beast</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="corner2Color">Vegetation Type (2,4)</label>
+                    <select id="corner2Color" onchange="updateGrid()">
+                        <option value="#008000">Whispering Pines</option>
+                        <option value="#00FF00">Emerald Ferns</option>
+                        <option value="#228B22">Shadow Moss</option>
+                        <option value="#32CD32">Glowing Cacti</option>
+                        <option value="#006400">Jade Vines</option>
+                        <option value="#9ACD32">Mystic Ivy</option>
+                        <option value="#3CB371">Lush Grass</option>
+                        <option value="#2E8B57">Spectral Reeds</option>
+                        <option value="#90EE90">Neon Orchids</option>
+                        <option value="#6B8E23">Twilight Thorns</option>
+                        <option value="#00FF7F">Starlit Ferns</option>
+                        <option value="#ADFF2F">Dusk Moss</option>
+                        <option value="#7FFF00">Radiant Cacti</option>
+                        <option value="#98FB98">Crystal Vines</option>
+                        <option value="#00FA9A">Enchanted Ivy</option>
+                        <option value="#66CDAA">Moonlit Grass</option>
+                        <option value="#20B2AA">Phantom Reeds</option>
+                        <option value="#00CED1">Astral Orchids</option>
+                        <option value="#40E0D0">Glimmer Thorns</option>
+                        <option value="#00FFFF">Ethereal Ferns</option>
+                        <option value="#008000">Nightshade Moss</option>
+                        <option value="#00FF00">Luminous Cacti</option>
+                        <option value="#228B22">Spectral Vines</option>
+                        <option value="#32CD32">Starborn Ivy</option>
+                        <option value="#006400">Celestial Grass</option>
+                        <option value="#9ACD32">Mystic Reeds</option>
+                        <option value="#3CB371">Eclipse Orchids</option>
+                        <option value="#2E8B57">Dawn Thorns</option>
+                        <option value="#90EE90">Aurora Ferns</option>
+                        <option value="#6B8E23">Void Moss</option>
+                        <option value="#00FF7F">Prism Cacti</option>
+                        <option value="#ADFF2F">Nova Vines</option>
+                        <option value="#7FFF00">Cosmic Ivy</option>
+                        <option value="#98FB98">Stellar Grass</option>
+                        <option value="#00FA9A">Galactic Reeds</option>
+                        <option value="#66CDAA">Lunar Orchids</option>
+                        <option value="#20B2AA">Solar Thorns</option>
+                        <option value="#00CED1">Comet Ferns</option>
+                        <option value="#40E0D0">Abyssal Moss</option>
+                        <option value="#00FFFF">Meteor Cacti</option>
+                        <option value="#7CFC00">Lime Sprout</option>
+                        <option value="#98FB98">Chartreuse Bloom</option>
+                        <option value="#ADFF2F">Turquoise Vine</option>
+                        <option value="#00FA9A">Aqua Fern</option>
+                        <option value="#7FFF00">Seafoam Ivy</option>
+                        <option value="#00FF7F">Pale Green</option>
+                        <option value="#66CDAA">Green Yellow</option>
+                        <option value="#20B2AA">Spring Mint</option>
+                        <option value="#00CED1">Lawn Green</option>
+                        <option value="#40E0D0">Mint Glow</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="corner3Color">Structure Type (4,2)</label>
+                    <select id="corner3Color" onchange="updateGrid()">
+                        <option value="#0000FF">Ancient Ruins</option>
+                        <option value="#4169E1">Crystal Tower</option>
+                        <option value="#1E90FF">Sky Fortress</option>
+                        <option value="#00B7EB">Obsidian Keep</option>
+                        <option value="#87CEEB">Starlit Temple</option>
+                        <option value="#6495ED">Moonstone Hall</option>
+                        <option value="#5F9EA0">Coral Spire</option>
+                        <option value="#B0C4DE">Mystic Shrine</option>
+                        <option value="#4682B4">Azure Citadel</option>
+                        <option value="#00CED1">Sapphire Bastion</option>
+                        <option value="#87CEFA">Lunar Keep</option>
+                        <option value="#6495ED">Celestial Tower</option>
+                        <option value="#5F9EA0">Stellar Fortress</option>
+                        <option value="#B0C4DE">Opal Sanctuary</option>
+                        <option value="#4682B4">Eclipse Ruins</option>
+                        <option value="#4169E1">Nova Spire</option>
+                        <option value="#1E90FF">Comet Citadel</option>
+                        <option value="#00B7EB">Astral Keep</option>
+                        <option value="#87CEEB">Cosmic Temple</option>
+                        <option value="#6495ED">Galactic Hall</option>
+                        <option value="#5F9EA0">Nebula Shrine</option>
+                        <option value="#B0C4DE">Void Bastion</option>
+                        <option value="#4682B4">Meteor Tower</option>
+                        <option value="#4169E1">Aurora Fortress</option>
+                        <option value="#1E90FF">Starborn Keep</option>
+                        <option value="#00B7EB">Solar Spire</option>
+                        <option value="#87CEEB">Lunar Citadel</option>
+                        <option value="#6495ED">Abyssal Temple</option>
+                        <option value="#5F9EA0">Prism Ruins</option>
+                        <option value="#B0C4DE">Dawn Tower</option>
+                        <option value="#4682B4">Dusk Bastion</option>
+                        <option value="#4169E1">Twilight Keep</option>
+                        <option value="#1E90FF">Glimmer Spire</option>
+                        <option value="#00B7EB">Phantom Citadel</option>
+                        <option value="#87CEEB">Spectral Shrine</option>
+                        <option value="#6495ED">Ethereal Fortress</option>
+                        <option value="#5F9EA0">Radiant Tower</option>
+                        <option value="#B0C4DE">Shadow Keep</option>
+                        <option value="#4682B4">Crystal Bastion</option>
+                        <option value="#4169E1">Moonlit Spire</option>
+                        <option value="#4B0082">Blue Monolith</option>
+                        <option value="#483D8B">Indigo Citadel</option>
+                        <option value="#6A5ACD">Dark Slate</option>
+                        <option value="#00BFFF">Slate Blue</option>
+                        <option value="#87CEFA">Deep Sky</option>
+                        <option value="#ADD8E6">Light Sky</option>
+                        <option value="#B0E0E6">Pale Blue</option>
+                        <option value="#00FFFF">Powder Blue</option>
+                        <option value="#40E0D0">Cyan Spire</option>
+                        <option value="#4682B4">Turquoise Keep</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="corner4Color">Mystic Artifact (4,4)</label>
+                    <select id="corner4Color" onchange="updateGrid()">
+                        <option value="#FFD700">Enchanted Relic</option>
+                        <option value="#FFA500">Starforged Blade</option>
+                        <option value="#FFC107">Sunken Amulet</option>
+                        <option value="#FFBF00">Mystic Orb</option>
+                        <option value="#FF8C00">Celestial Rune</option>
+                        <option value="#FFB300">Golden Scepter</option>
+                        <option value="#FFCC33">Eclipse Talisman</option>
+                        <option value="#FFD54F">Lunar Crown</option>
+                        <option value="#FFE082">Solar Gem</option>
+                        <option value="#FFEB3B">Astral Shard</option>
+                        <option value="#FFFF00">Comet Pendant</option>
+                        <option value="#FFDAB9">Nova Relic</option>
+                        <option value="#FFE4B5">Starlit Charm</option>
+                        <option value="#FFDEAD">Cosmic Tablet</option>
+                        <option value="#FFFACD">Galactic Crest</option>
+                        <option value="#FFF8DC">Meteor Stone</option>
+                        <option value="#FFFFE0">Aurora Crystal</option>
+                        <option value="#FFF5EE">Dawn Sigil</option>
+                        <option value="#FFF0F5">Dusk Medallion</option>
+                        <option value="#FFE4E1">Twilight Orb</option>
+                        <option value="#FFD700">Glimmer Rune</option>
+                        <option value="#FFA500">Phantom Amulet</option>
+                        <option value="#FFC107">Spectral Scepter</option>
+                        <option value="#FFBF00">Ethereal Gem</option>
+                        <option value="#FF8C00">Radiant Shard</option>
+                        <option value="#FFB300">Shadow Relic</option>
+                        <option value="#FFCC33">Crystal Talisman</option>
+                        <option value="#FFD54F">Moonlit Crest</option>
+                        <option value="#FFE082">Starborn Tablet</option>
+                        <option value="#FFEB3B">Abyssal Rune</option>
+                        <option value="#FFFF00">Prism Pendant</option>
+                        <option value="#FFDAB9">Nebula Stone</option>
+                        <option value="#FFE4B5">Void Crystal</option>
+                        <option value="#FFDEAD">Lunar Sigil</option>
+                        <option value="#FFFACD">Solar Medallion</option>
+                        <option value="#FFF8DC">Comet Charm</option>
+                        <option value="#FFFFE0">Astral Orb</option>
+                        <option value="#FFF5EE">Galactic Scepter</option>
+                        <option value="#FFF0F5">Meteor Gem</option>
+                        <option value="#FFE4E1">Aurora Relic</option>
+                        <option value="#FFD700">Yellow Star</option>
+                        <option value="#FFA500">Peach Puff</option>
+                        <option value="#FFC107">Navajo White</option>
+                        <option value="#FFBF00">Wheat Glow</option>
+                        <option value="#FF8C00">Lemon Chiffon</option>
+                        <option value="#FFB300">Corn Silk</option>
+                        <option value="#FFCC33">Light Yellow</option>
+                        <option value="#FFD54F">Sea Shell</option>
+                        <option value="#FFE082">Lavender Blush</option>
+                        <option value="#FFEB3B">Misty Rose</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="defaultColor">Terrain Feature</label>
+                    <select id="defaultColor" onchange="updateGrid()">
+                        <option value="#1C2526">Crystal Abyss</option>
+                        <option value="#2E2E2E">Shadow Vale</option>
+                        <option value="#3C2F2F">Midnight Crest</option>
+                        <option value="#483C32">Umber Depth</option>
+                        <option value="#4A3728">Volcanic Shade</option>
+                        <option value="#5C4033">Clay Dusk</option>
+                        <option value="#2A2F3A">Obsidian Tide</option>
+                        <option value="#3B3C36">Soot Canyon</option>
+                        <option value="#4B3E2A">Ochre Hollow</option>
+                        <option value="#2F4F4F">Slate Lagoon</option>
+                        <option value="#333333">Dark Haze</option>
+                        <option value="#4F4F4F">Ashen Rift</option>
+                        <option value="#5C4033">Rust Mire</option>
+                        <option value="#6B4E31">Sandy Gloom</option>
+                        <option value="#3E2C1C">Silt Shadow</option>
+                        <option value="#5B3A29">Loess Drift</option>
+                        <option value="#4A2F1B">Bog Mist</option>
+                        <option value="#3B2A1A">Humus Veil</option>
+                        <option value="#5A3C2B">Gritty Shade</option>
+                        <option value="#4C3A28">Rocky Abyss</option>
+                        <option value="#2C2C2C">Ebony Crater</option>
+                        <option value="#3F3F3F">Charcoal Vale</option>
+                        <option value="#504A3B">Tawny Ravine</option>
+                        <option value="#6D4C41">Laterite Void</option>
+                        <option value="#7A4F2A">Podzol Gloom</option>
+                        <option value="#4D3B29">Salty Depth</option>
+                        <option value="#6F4C2B">Alkaline Mist</option>
+                        <option value="#3E2C1D">Organic Dusk</option>
+                        <option value="#5D3F2B">Mineral Haze</option>
+                        <option value="#3A2F22">Fossil Crest</option>
+                        <option value="#262626">Iron Shroud</option>
+                        <option value="#404040">Peat Vortex</option>
+                        <option value="#5E4B3C">Regolith Tide</option>
+                        <option value="#6E4B2C">Gravel Shade</option>
+                        <option value="#7C4D2E">Clay Loam Drift</option>
+                        <option value="#3D2B1C">Topsoil Abyss</option>
+                        <option value="#5C3E2A">Subsoil Canyon</option>
+                        <option value="#4B3A2B">Silty Veil</option>
+                        <option value="#6C4A2F">Marsh Gloom</option>
+                        <option value="#3C2A1D">Sienna Rift</option>
+                        <option value="#2B2B2B">Onyx Hollow</option>
+                        <option value="#454545">Dark Slate</option>
+                        <option value="#574736">Tundra Shadow</option>
+                        <option value="#7E4F2D">Chalky Depth</option>
+                        <option value="#8B5F3D">Alluvial Mist</option>
+                        <option value="#4E3C2A">Eroded Vale</option>
+                        <option value="#6A4B2D">Loam Crater</option>
+                        <option value="#3F2D1E">Silt Crest</option>
+                        <option value="#5F3F2C">Mudflat Tide</option>
+                        <option value="#4A3623">Peaty Drift</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="borderColor">Border Glow</label>
+                    <select id="borderColor" onchange="updateGrid()">
+                        <option value="#FF0000">Crimson Vortex</option>
+                        <option value="#FFA500">Starforged Flame</option>
+                        <option value="#FFFF00">Solar Burst</option>
+                        <option value="#00FF00">Emerald Pulse</option>
+                        <option value="#0000FF">Sapphire Void</option>
+                        <option value="#800080">Amethyst Nebula</option>
+                        <option value="#FF69B4">Pink Cosmos</option>
+                        <option value="#00FFFF">Aqua Radiance</option>
+                        <option value="#FFFFFF">Starlight Glow</option>
+                        <option value="#808080">Shadow Veil</option>
+                        <option value="#DC143C">Scarlet Abyss</option>
+                        <option value="#FF4500">Blazing Coral</option>
+                        <option value="#FFD700">Golden Haze</option>
+                        <option value="#32CD32">Lime Beacon</option>
+                        <option value="#4169E1">Skyward Glint</option>
+                        <option value="#9932CC">Violet Mist</option>
+                        <option value="#FF1493">Fuchsia Flare</option>
+                        <option value="#00CED1">Turquoise Shine</option>
+                        <option value="#F5F5F5">Lunar Mist</option>
+                        <option value="#696969">Dusk Glimmer</option>
+                        <option value="#B22222">Firebrick Core</option>
+                        <option value="#FF8C00">Ember Glow</option>
+                        <option value="#FFFACD">Lemon Spark</option>
+                        <option value="#ADFF2F">Chartreuse Wave</option>
+                        <option value="#1E90FF">Azure Flame</option>
+                        <option value="#8A2BE2">Purple Haze</option>
+                        <option value="#C71585">Magenta Star</option>
+                        <option value="#20B2AA">Teal Aurora</option>
+                        <option value="#DCDCDC">Silver Sheen</option>
+                        <option value="#2F4F4F">Slate Depth</option>
+                        <option value="#8B0000">Dark Crimson Tide</option>
+                        <option value="#FFA07A">Salmon Blaze</option>
+                        <option value="#FFFFE0">Creamy Light</option>
+                        <option value="#7FFF00">Green Nova</option>
+                        <option value="#6495ED">Cornflower Beam</option>
+                        <option value="#9400D3">Indigo Spark</option>
+                        <option value="#DB7093">Pale Rose</option>
+                        <option value="#40E0D0">Cyan Crest</option>
+                        <option value="#F0F8FF">Ghostly Glow</option>
+                        <option value="#708090">Steel Shadow</option>
+                        <option value="#A52A2A">Brown Cosmos</option>
+                        <option value="#FF7F50">Peach Radiance</option>
+                        <option value="#FFF8DC">Ivory Flare</option>
+                        <option value="#90EE90">Mint Shimmer</option>
+                        <option value="#87CEEB">Light Blue Vortex</option>
+                        <option value="#BA55D3">Orchid Pulse</option>
+                        <option value="#FF6EB4">Hot Pink Gleam</option>
+                        <option value="#48D1CC">Aquamarine Wave</option>
+                        <option value="#F8F8FF">Snowy Mist</option>
+                        <option value="#4682B4">Steel Blue Glow</option>
+                    </select>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="randomizeBtn" onclick="randomizeAttributes()">Randomize</button>
+                <button id="downloadBtn" onclick="downloadGrid()">Download Image</button>
+                <button id="mintBtn" onclick="mintNFT()" disabled>Mint NFT (Free)</button>
+            </div>
+            <div id="transactionStatus" class="status"></div>
+        </div>
+        <div class="nft-viewer">
+            <h2>Your X Layer Vibe NFTs</h2>
+            <div id="nftList"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, accounts, contract;
+        const CONTRACT_ADDRESS = '0xa59215293170738Cfff4B3D404F5CB0D1621d29b';
+        const MINT_PRICE = '0';
+
+        const CONTRACT_ABI = [
+            {
+                "inputs": [
+                    {"internalType": "string", "name": "uri", "type": "string"},
+                    {"internalType": "string[]", "name": "attributes", "type": "string[]"}
+                ],
+                "name": "mintNFT",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "address", "name": "_owner", "type": "address"}
+                ],
+                "name": "walletOfOwner",
+                "outputs": [
+                    {"internalType": "uint256[]", "name": "", "type": "uint256[]"}
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
+                ],
+                "name": "tokenURI",
+                "outputs": [
+                    {"internalType": "string", "name": "", "type": "string"}
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+                    {"internalType": "string", "name": "newTokenURI", "type": "string"}
+                ],
+                "name": "updateTokenMetadata",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "uint256", "name": "_newCost", "type": "uint256"}
+                ],
+                "name": "setCost",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "withdraw",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "address", "name": "to", "type": "address"},
+                    {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+                    {"internalType": "string", "name": "uri", "type": "string"},
+                    {"internalType": "bytes32", "name": "attributes", "type": "bytes32"}
+                ],
+                "name": "ownerMintWithData",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [
+                    {"internalType": "uint256", "name": "", "type": "uint256"}
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const xLayerMainnet = {
+            chainId: '0xc4',
+            chainName: 'xLayer',
+            nativeCurrency: {
+                name: 'OKB',
+                symbol: 'OKB',
+                decimals: 18
+            },
+            rpcUrls: ['https://rpc.xlayer.tech'],
+            blockExplorerUrls: ['https://www.okx.com/explorer/xlayer']
+        };
+
+        const canvas = document.getElementById('gridCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 5;
+        const cellSize = canvas.width / gridSize;
+
+        const colors = {
+            center: '#3C2F2F',
+            corner1: '#FF0000',
+            corner2: '#008000',
+            corner3: '#0000FF',
+            corner4: '#FFD700',
+            default: '#1C2526',
+            border: '#FF0000'
+        };
+
+        const soilColors = [
+            '#3C2F2F', '#4A3728', '#5C4033', '#6B4E31', '#8A5522', '#A0522D', '#704214', '#4F2F1F', '#3F2A1D', '#7B3F00',
+            '#8B5A2B', '#A67B5B', '#4B2E1A', '#6D4C41', '#8D5524', '#3E2C1C', '#5B3A29', '#7A4F2A', '#9C6B4E', '#4A2F1B',
+            '#6C4A2F', '#8B5F3D', '#3B2A1A', '#5A3C2B', '#7C4D2E', '#9B6A3F', '#4C3A28', '#6E4B2C', '#8C5E3A', '#3D2B1C',
+            '#5C3E2A', '#7E4F2D', '#9D6C3E', '#4D3B29', '#6F4C2B', '#8E5F3C', '#3E2C1D', '#5D3F2B', '#7F502E', '#9E6D3F',
+            '#8B4513', '#D2691E', '#A52A2A', '#F4A460', '#DEB887', '#CD853F', '#BC8F8F', '#8B5A2B', '#D2B48C', '#DAA520'
+        ];
+
+        const petColors = [
+            '#FF0000', '#FF4500', '#FF6347', '#DC143C', '#FF8C00', '#FFA500', '#FF7F50', '#FF4040', '#CD5C5C', '#FF3030',
+            '#E9967A', '#FA8072', '#F08080', '#FF8247', '#FF3C3C', '#FF5C5C', '#FF6A6A', '#FF7F24', '#FF4500', '#FF6347',
+            '#DC143C', '#FF8C00', '#FFA07A', '#FF7F50', '#FF4040', '#CD5C5C', '#FF3030', '#E9967A', '#FA8072', '#FF8247',
+            '#FF3C3C', '#FF5C5C', '#FF6A6A', '#FF7F24', '#FF4500', '#FF69B4', '#FF1493', '#C71585', '#DB7093', '#FF00FF',
+            '#FFB6C1', '#FF69B4', '#FF1493', '#C71585', '#DB7093', '#FF00FF', '#FFB6C1', '#FF69B4', '#FF1493', '#C71585'
+        ];
+
+        const vegetationColors = [
+            '#008000', '#00FF00', '#228B22', '#32CD32', '#006400', '#9ACD32', '#3CB371', '#2E8B57', '#90EE90', '#6B8E23',
+            '#00FF7F', '#ADFF2F', '#7FFF00', '#98FB98', '#00FA9A', '#66CDAA', '#20B2AA', '#00CED1', '#40E0D0', '#00FFFF',
+            '#008000', '#00FF00', '#228B22', '#32CD32', '#006400', '#9ACD32', '#3CB371', '#2E8B57', '#90EE90', '#6B8E23',
+            '#00FF7F', '#ADFF2F', '#7FFF00', '#98FB98', '#00FA9A', '#66CDAA', '#20B2AA', '#00CED1', '#40E0D0', '#00FFFF',
+            '#7CFC00', '#98FB98', '#ADFF2F', '#00FA9A', '#7FFF00', '#00FF7F', '#66CDAA', '#20B2AA', '#00CED1', '#40E0D0'
+        ];
+
+        const structureColors = [
+            '#0000FF', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED', '#5F9EA0', '#B0C4DE', '#4682B4', '#00CED1',
+            '#87CEFA', '#6495ED', '#5F9EA0', '#B0C4DE', '#4682B4', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED',
+            '#5F9EA0', '#B0C4DE', '#4682B4', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED', '#5F9EA0', '#B0C4DE',
+            '#4B0082', '#483D8B', '#6A5ACD', '#00BFFF', '#87CEFA', '#ADD8E6', '#B0E0E6', '#00FFFF', '#40E0D0', '#4682B4',
+            '#0000FF', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED', '#5F9EA0', '#B0C4DE', '#4682B4', '#00CED1'
+        ];
+
+        const artifactColors = [
+            '#FFD700', '#FFA500', '#FFC107', '#FFBF00', '#FF8C00', '#FFB300', '#FFCC33', '#FFD54F', '#FFE082', '#FFEB3B',
+            '#FFFF00', '#FFDAB9', '#FFE4B5', '#FFDEAD', '#FFFACD', '#FFF8DC', '#FFFFE0', '#FFF5EE', '#FFF0F5', '#FFE4E1',
+            '#FFD700', '#FFA500', '#FFC107', '#FFBF00', '#FF8C00', '#FFB300', '#FFCC33', '#FFD54F', '#FFE082', '#FFEB3B',
+            '#FFFF00', '#FFDAB9', '#FFE4B5', '#FFDEAD', '#FFFACD', '#FFF8DC', '#FFFFE0', '#FFF5EE', '#FFF0F5', '#FFE4E1',
+            '#FFD700', '#FFA500', '#FFC107', '#FFBF00', '#FF8C00', '#FFB300', '#FFCC33', '#FFD54F', '#FFE082', '#FFEB3B'
+        ];
+
+        const terrainColors = [
+            '#1C2526', '#2E2E2E', '#3C2F2F', '#483C32', '#4A3728', '#5C4033', '#2A2F3A', '#3B3C36', '#4B3E2A', '#2F4F4F',
+            '#333333', '#4F4F4F', '#5C4033', '#6B4E31', '#3E2C1C', '#5B3A29', '#4A2F1B', '#3B2A1A', '#5A3C2B', '#4C3A28',
+            '#2C2C2C', '#3F3F3F', '#504A3B', '#6D4C41', '#7A4F2A', '#4D3B29', '#6F4C2B', '#3E2C1D', '#5D3F2B', '#3A2F22',
+            '#262626', '#404040', '#5E4B3C', '#6E4B2C', '#7C4D2E', '#3D2B1C', '#5C3E2A', '#4B3A2B', '#6C4A2F', '#3C2A1D',
+            '#2B2B2B', '#454545', '#574736', '#7E4F2D', '#8B5F3D', '#4E3C2A', '#6A4B2D', '#3F2D1E', '#5F3F2C', '#4A3623'
+        ];
+
+        const borderColors = [
+            '#FF0000', '#FFA500', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FF69B4', '#00FFFF', '#FFFFFF', '#808080',
+            '#DC143C', '#FF4500', '#FFD700', '#32CD32', '#4169E1', '#9932CC', '#FF1493', '#00CED1', '#F5F5F5', '#696969',
+            '#B22222', '#FF8C00', '#FFFACD', '#ADFF2F', '#1E90FF', '#8A2BE2', '#C71585', '#20B2AA', '#DCDCDC', '#2F4F4F',
+            '#8B0000', '#FFA07A', '#FFFFE0', '#7FFF00', '#6495ED', '#9400D3', '#DB7093', '#40E0D0', '#F0F8FF', '#708090',
+            '#A52A2A', '#FF7F50', '#FFF8DC', '#90EE90', '#87CEEB', '#BA55D3', '#FF6EB4', '#48D1CC', '#F8F8FF', '#4682B4'
+        ];
+
+                const colorNames = [
+            // Soil Types (0-49)
+            'FertileLoam', 'VolcanicAsh', 'RedClay', 'SandyLoam', 'DesertSoil', 'SiennaEarth', 'OchreBed', 'PeatMoss', 'BlackLoam', 'TundraSoil',
+            'SavannaDust', 'AridCrust', 'MudflatClay', 'Laterite', 'ChalkySoil', 'SiltBed', 'LoessLayer', 'Podzol', 'TerraRossa', 'BogSoil',
+            'MarshMud', 'AlluvialSoil', 'HumusLayer', 'GrittyLoam', 'ClayLoam', 'SandyClay', 'RockySoil', 'GravelBed', 'SiltyClay', 'Topsoil',
+            'Subsoil', 'Regolith', 'IronSoil', 'SaltyCrust', 'AlkalineSoil', 'CalcareousSoil', 'OrganicSoil', 'MineralSoil', 'FossilBed', 'ErodedSoil',
+            'SaddleBrown', 'Chocolate', 'Brown', 'SandyBrown', 'BurlyWood', 'Peru', 'RosyBrown', 'Tan', 'Wheat', 'GoldenRod',
+            // Guardian Pets (50-99)
+            'MysticWolf', 'DesertScorpion', 'CrimsonHawk', 'SandSerpent', 'EmberFox', 'CoralViper', 'BloodPanther', 'DuneLizard', 'FireBeetle', 'AshenOwl',
+            'SableJackal', 'CopperCobra', 'FlameRaven', 'SaffronFalcon', 'RubyGecko', 'ObsidianWolf', 'QuartzScorpion', 'GarnetHawk', 'TopazSerpent', 'CitrineFox',
+            'OpalViper', 'OnyxPanther', 'AgateLizard', 'JasperBeetle', 'AmberOwl', 'CorundumJackal', 'TurquoiseCobra', 'AmethystRaven', 'PeridotFalcon', 'CarnelianGecko',
+            'JetWolf', 'MalachiteScorpion', 'HematiteHawk', 'ZirconSerpent', 'SpinelFox', 'AquamarineViper', 'BerylPanther', 'ChalcedonyLizard', 'SardonyxBeetle', 'MoonstoneOwl',
+            'RedPhoenix', 'PinkDragon', 'DarkRuby', 'BlazeTiger', 'SalmonSerpent', 'RoseFalcon', 'PaleCoral', 'MagentaWyrm', 'DeepPink', 'FuchsiaBeast',
+            // Vegetation (100-149)
+            'WhisperingPines', 'EmeraldFerns', 'ShadowMoss', 'GlowingCacti', 'JadeVines', 'MysticIvy', 'LushGrass', 'SpectralReeds', 'NeonOrchids', 'TwilightThorns',
+            'StarlitFerns', 'DuskMoss', 'RadiantCacti', 'CrystalVines', 'EnchantedIvy', 'MoonlitGrass', 'PhantomReeds', 'AstralOrchids', 'GlimmerThorns', 'EtherealFerns',
+            'NightshadeMoss', 'LuminousCacti', 'SpectralVines', 'StarbornIvy', 'CelestialGrass', 'MysticReeds', 'EclipseOrchids', 'DawnThorns', 'AuroraFerns', 'VoidMoss',
+            'PrismCacti', 'NovaVines', 'CosmicIvy', 'StellarGrass', 'GalacticReeds', 'LunarOrchids', 'SolarThorns', 'CometFerns', 'AbyssalMoss', 'MeteorCacti',
+            'LimeSprout', 'ChartreuseBloom', 'TurquoiseVine', 'AquaFern', 'SeafoamIvy', 'PaleGreen', 'GreenYellow', 'SpringMint', 'LawnGreen', 'MintGlow',
+            // Structures (150-199)
+            'AncientRuins', 'CrystalTower', 'SkyFortress', 'ObsidianKeep', 'StarlitTemple', 'MoonstoneHall', 'CoralSpire', 'MysticShrine', 'AzureCitadel', 'SapphireBastion',
+            'LunarKeep', 'CelestialTower', 'StellarFortress', 'OpalSanctuary', 'EclipseRuins', 'NovaSpire', 'CometCitadel', 'AstralKeep', 'CosmicTemple', 'GalacticHall',
+            'NebulaShrine', 'VoidBastion', 'MeteorTower', 'AuroraFortress', 'StarbornKeep', 'SolarSpire', 'LunarCitadel', 'AbyssalTemple', 'PrismRuins', 'DawnTower',
+            'DuskBastion', 'TwilightKeep', 'GlimmerSpire', 'PhantomCitadel', 'SpectralShrine', 'EtherealFortress', 'RadiantTower', 'ShadowKeep', 'CrystalBastion', 'MoonlitSpire',
+            'BlueMonolith', 'IndigoCitadel', 'DarkSlate', 'SlateBlue', 'DeepSky', 'LightSky', 'PaleBlue', 'PowderBlue', 'CyanSpire', 'TurquoiseKeep',
+            // Artifacts (200-249)
+            'EnchantedRelic', 'StarforgedBlade', 'SunkenAmulet', 'MysticOrb', 'CelestialRune', 'GoldenScepter', 'EclipseTalisman', 'LunarCrown', 'SolarGem', 'AstralShard',
+            'CometPendant', 'NovaRelic', 'StarlitCharm', 'CosmicTablet', 'GalacticCrest', 'MeteorStone', 'AuroraCrystal', 'DawnSigil', 'DuskMedallion', 'TwilightOrb',
+            'GlimmerRune', 'PhantomAmulet', 'SpectralScepter', 'EtherealGem', 'RadiantShard', 'ShadowRelic', 'CrystalTalisman', 'MoonlitCrest', 'StarbornTablet', 'AbyssalRune',
+            'PrismPendant', 'NebulaStone', 'VoidCrystal', 'LunarSigil', 'SolarMedallion', 'CometCharm', 'AstralOrb', 'GalacticScepter', 'MeteorGem', 'AuroraRelic',
+            'YellowStar', 'PeachPuff', 'NavajoWhite', 'WheatGlow', 'LemonChiffon', 'CornSilk', 'LightYellow', 'SeaShell', 'LavenderBlush', 'MistyRose',
+            // Terrain Features (250-299)
+            'CrystalAbyss', 'ShadowVale', 'MidnightCrest', 'UmberDepth', 'VolcanicShade', 'ClayDusk', 'ObsidianTide', 'SootCanyon', 'OchreHollow', 'SlateLagoon',
+            'DarkHaze', 'AshenRift', 'RustMire', 'SandyGloom', 'SiltShadow', 'LoessDrift', 'BogMist', 'HumusVeil', 'GrittyShade', 'RockyAbyss',
+            'EbonyCrater', 'CharcoalVale', 'TawnyRavine', 'LateriteVoid', 'PodzolGloom', 'SaltyDepth', 'AlkalineMist', 'OrganicDusk', 'MineralHaze', 'FossilCrest',
+            'IronShroud', 'PeatVortex', 'RegolithTide', 'GravelShade', 'ClayLoamDrift', 'TopsoilAbyss', 'SubsoilCanyon', 'SiltyVeil', 'MarshGloom', 'SiennaRift',
+            'OnyxHollow', 'DarkSlate', 'TundraShadow', 'ChalkyDepth', 'AlluvialMist', 'ErodedVale', 'LoamCrater', 'SiltCrest', 'MudflatTide', 'PeatyDrift',
+            // Border Glow (300-349)
+            'CrimsonVortex', 'StarforgedFlame', 'SolarBurst', 'EmeraldPulse', 'SapphireVoid', 'AmethystNebula', 'PinkCosmos', 'AquaRadiance', 'StarlightGlow', 'ShadowVeil',
+            'ScarletAbyss', 'BlazingCoral', 'GoldenHaze', 'LimeBeacon', 'SkywardGlint', 'VioletMist', 'FuchsiaFlare', 'TurquoiseShine', 'LunarMist', 'DuskGlimmer',
+            'FirebrickCore', 'EmberGlow', 'LemonSpark', 'ChartreuseWave', 'AzureFlame', 'PurpleHaze', 'MagentaStar', 'TealAurora', 'SilverSheen', 'SlateDepth',
+            'DarkCrimsonTide', 'SalmonBlaze', 'CreamyLight', 'GreenNova', 'CornflowerBeam', 'IndigoSpark', 'PaleRose', 'CyanCrest', 'GhostlyGlow', 'SteelShadow',
+            'BrownCosmos', 'PeachRadiance', 'IvoryFlare', 'MintShimmer', 'LightBlueVortex', 'OrchidPulse', 'HotPinkGleam', 'AquamarineWave', 'SnowyMist', 'SteelBlueGlow'
+        ];
+
+        function showStatus(message) {
+            document.getElementById('transactionStatus').innerText = message;
+        }
+
+        async function connectWallet() {
+            if (!window.ethereum) {
+                showStatus('Please install MetaMask.');
+                return;
+            }
+            try {
+                web3 = new Web3(window.ethereum);
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== '0xc4') {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xc4' }],
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [xLayerMainnet],
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+                contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+                showStatus(`Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
+                enableInputs(true);
+                fetchOwnedNFTs();
+            } catch (error) {
+                showStatus('Connection failed: ' + error.message);
+            }
+        }
+
+        function enableInputs(enabled) {
+            document.getElementById('centerColor').disabled = !enabled;
+            document.getElementById('corner1Color').disabled = !enabled;
+            document.getElementById('corner2Color').disabled = !enabled;
+            document.getElementById('corner3Color').disabled = !enabled;
+            document.getElementById('corner4Color').disabled = !enabled;
+            document.getElementById('defaultColor').disabled = !enabled;
+            document.getElementById('borderColor').disabled = !enabled;
+            document.getElementById('randomizeBtn').disabled = !enabled;
+            document.getElementById('downloadBtn').disabled = !enabled;
+            document.getElementById('mintBtn').disabled = !enabled;
+        }
+
+        function randomizeAttributes() {
+            const usedColors = new Set();
+
+            // 优先选择 Terrain Feature 颜色，确保其独特性
+            colors.default = terrainColors[Math.floor(Math.random() * terrainColors.length)];
+            usedColors.add(colors.default);
+
+            // 从剩余颜色中选择其他属性颜色
+            const selectColor = (colorArray) => {
+                const availableColors = colorArray.filter(color => !usedColors.has(color));
+                if (availableColors.length === 0) return colorArray[Math.floor(Math.random() * colorArray.length)];
+                const index = Math.floor(Math.random() * availableColors.length);
+                const selectedColor = availableColors[index];
+                usedColors.add(selectedColor);
+                return selectedColor;
+            };
+
+            colors.center = selectColor(soilColors);
+            colors.corner1 = selectColor(petColors);
+            colors.corner2 = selectColor(vegetationColors);
+            colors.corner3 = selectColor(structureColors);
+            colors.corner4 = selectColor(artifactColors);
+            colors.border = selectColor(borderColors);
+
+            // 更新下拉菜单
+            document.getElementById('centerColor').value = colors.center;
+            document.getElementById('corner1Color').value = colors.corner1;
+            document.getElementById('corner2Color').value = colors.corner2;
+            document.getElementById('corner3Color').value = colors.corner3;
+            document.getElementById('corner4Color').value = colors.corner4;
+            document.getElementById('defaultColor').value = colors.default;
+            document.getElementById('borderColor').value = colors.border;
+
+            drawGrid();
+            checkAttributeConflict();
+        }
+
+        function updateGrid() {
+            colors.center = document.getElementById('centerColor').value;
+            colors.corner1 = document.getElementById('corner1Color').value;
+            colors.corner2 = document.getElementById('corner2Color').value;
+            colors.corner3 = document.getElementById('corner3Color').value;
+            colors.corner4 = document.getElementById('corner4Color').value;
+            colors.default = document.getElementById('defaultColor').value;
+            colors.border = document.getElementById('borderColor').value;
+            drawGrid();
+            checkAttributeConflict();
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let row = 1; row <= gridSize; row++) {
+                for (let col = 1; col <= gridSize; col++) {
+                    let fillColor = colors.default;
+                    if (row === 3 && col === 3) fillColor = colors.center;
+                    else if (row === 2 && col === 2) fillColor = colors.corner1;
+                    else if (row === 2 && col === 4) fillColor = colors.corner2;
+                    else if (row === 4 && col === 2) fillColor = colors.corner3;
+                    else if (row === 4 && col === 4) fillColor = colors.corner4;
+                    ctx.fillStyle = fillColor || '#1C2526';
+                    ctx.fillRect((col - 1) * cellSize, (row - 1) * cellSize, cellSize, cellSize);
+                }
+            }
+            ctx.strokeStyle = colors.border || '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function downloadGrid() {
+            const link = document.createElement('a');
+            link.download = 'x-layer-vibe.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function checkAttributeConflict() {
+            const customColors = [colors.center, colors.corner1, colors.corner2, colors.corner3, colors.corner4, colors.border];
+            // 确保 Terrain Feature 颜色与特殊格子和边框颜色不同
+            if (customColors.includes(colors.default)) {
+                showStatus('Terrain Feature color must not match other attributes. Please select a different color.');
+                document.getElementById('mintBtn').disabled = true;
+                return false;
+            }
+            // 确保 7 个属性名称唯一
+            const attributes = [
+                colorNames[soilColors.indexOf(colors.center)] + '1',
+                colorNames[petColors.indexOf(colors.corner1) + 50] + '2',
+                colorNames[vegetationColors.indexOf(colors.corner2) + 100] + '3',
+                colorNames[structureColors.indexOf(colors.corner3) + 150] + '4',
+                colorNames[artifactColors.indexOf(colors.corner4) + 200] + '5',
+                colorNames[terrainColors.indexOf(colors.default) + 250] + '6',
+                colorNames[borderColors.indexOf(colors.border) + 300] + '7'
+            ];
+            const uniqueAttributes = new Set(attributes);
+            if (uniqueAttributes.size !== 7) {
+                showStatus('Attributes must not be repeated. Please select different attributes.');
+                document.getElementById('mintBtn').disabled = true;
+                return false;
+            }
+            showStatus('');
+            document.getElementById('mintBtn').disabled = false;
+            return true;
+        }
+
+        async function generateURI() {
+            const totalSupply = await contract.methods.totalSupply().call();
+            const imageData = canvas.toDataURL('image/png');
+            const attributes = [
+                {
+                    trait_type: 'Soil Type',
+                    value: colorNames[soilColors.indexOf(colors.center)]
+                },
+                {
+                    trait_type: 'Guardian Pet',
+                    value: colorNames[petColors.indexOf(colors.corner1) + 50]
+                },
+                {
+                    trait_type: 'Vegetation Type',
+                    value: colorNames[vegetationColors.indexOf(colors.corner2) + 100]
+                },
+                {
+                    trait_type: 'Structure Type',
+                    value: colorNames[structureColors.indexOf(colors.corner3) + 150]
+                },
+                {
+                    trait_type: 'Mystic Artifact',
+                    value: colorNames[artifactColors.indexOf(colors.corner4) + 200]
+                },
+                {
+                    trait_type: 'Terrain Feature',
+                    value: colorNames[terrainColors.indexOf(colors.default) + 250]
+                },
+                {
+                    trait_type: 'Border Glow',
+                    value: colorNames[borderColors.indexOf(colors.border) + 300]
+                }
+            ];
+            const metadata = {
+                name: `X Layer Vibe #${parseInt(totalSupply) + 1}`,
+                description: 'A unique NFT from the X Layer Vibe collection, representing a vibrant 5x5 grid with a custom border glow.',
+                image: imageData,
+                attributes: attributes
+            };
+            const metadataString = JSON.stringify(metadata);
+            const uri = `data:application/json;base64,${btoa(metadataString)}`;
+            return { uri, attributes: attributes.map(attr => `${attr.trait_type}:${attr.value}`) };
+        }
+
+        async function mintNFT() {
+            if (!contract || !accounts) {
+                showStatus('Please connect your wallet first.');
+                return;
+            }
+            if (!checkAttributeConflict()) {
+                return;
+            }
+            try {
+                const { uri, attributes } = await generateURI();
+                const attributeHash = web3.utils.keccak256(attributes.join(''));
+                const isUsed = await contract.methods.usedAttributeCombinations(attributeHash).call();
+                if (isUsed) {
+                    showStatus('This combination of attributes has already been used. Try a different combination.');
+                    return;
+                }
+                const tx = await contract.methods.mintNFT(uri, attributes).send({
+                    from: accounts[0],
+                    value: MINT_PRICE
+                });
+                showStatus(`NFT minted successfully! Transaction: ${tx.transactionHash}`);
+                fetchOwnedNFTs();
+            } catch (error) {
+                showStatus('Minting failed: ' + error.message);
+            }
+        }
+
+        async function fetchOwnedNFTs() {
+            if (!contract || !accounts) return;
+            try {
+                const tokenIds = await contract.methods.walletOfOwner(accounts[0]).call();
+                const nftList = document.getElementById('nftList');
+                nftList.innerHTML = '';
+                if (tokenIds.length === 0) {
+                    nftList.innerHTML = '<p>You do not own any X Layer Vibe NFTs yet.</p>';
+                    return;
+                }
+                for (const tokenId of tokenIds) {
+                    const uri = await contract.methods.tokenURI(tokenId).call();
+                    const metadata = JSON.parse(atob(uri.replace('data:application/json;base64,', '')));
+                    const nftCard = document.createElement('div');
+                    nftCard.className = 'nft-card';
+                    nftCard.innerHTML = `
+                        <img src="${metadata.image}" alt="NFT ${tokenId}">
+                        <p>Token ID: ${tokenId}</p>
+                        <p>${metadata.name}</p>
+                    `;
+                    nftList.appendChild(nftCard);
+                }
+            } catch (error) {
+                showStatus('Failed to fetch NFTs: ' + error.message);
+            }
+        }
+
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
+        window.onload = () => {
+            randomizeAttributes();
+        };
+    </script>
+</body>
+</html>
