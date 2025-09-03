@@ -5,18 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X Layer Vibe</title>
     <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
+            background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            color: #e0e0e0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-family: 'Montserrat', Arial, sans-serif;
-            background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
-            margin: 0;
-            padding: 20px;
             min-height: 100vh;
-            color: #e0e0e0;
         }
         .container {
             max-width: 800px;
@@ -28,12 +27,11 @@
         }
         h1 {
             text-align: center;
-            font-size: 36px;
-            margin-bottom: 20px;
+            font-size: 28px;
+            margin-bottom: 25px;
             color: #ffd700;
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
         .wallet-section {
             display: flex;
@@ -54,7 +52,7 @@
             margin-bottom: 8px;
             font-size: 14px;
             font-weight: bold;
-            color: #ffd700;
+            color: #cccccc;
         }
         select {
             width: 100%;
@@ -82,12 +80,11 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, background 0.3s;
         }
         button:hover {
             background: linear-gradient(45deg, #ffaa00, #ffd700);
             transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
         }
         button:disabled {
             background: #666;
@@ -122,7 +119,6 @@
             margin: 0 auto 25px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-            background-color: #fff;
         }
         .action-buttons {
             display: flex;
@@ -168,7 +164,7 @@
             margin-top: 30px;
         }
         .nft-viewer h2 {
-            font-size: 24px;
+            font-size: 20px;
             text-align: center;
             margin-bottom: 15px;
             color: #ffd700;
@@ -211,14 +207,14 @@
             font-size: 12px;
         }
         @media (max-width: 768px) {
-            h1 { font-size: 28px; }
+            h1 { font-size: 24px; }
             .controls { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
             label { font-size: 12px; }
             select { font-size: 12px; padding: 6px; }
             button { font-size: 14px; padding: 8px 12px; }
             .wallet-info { font-size: 14px; }
             .modal-content { max-width: 90%; padding: 15px; }
-            .nft-viewer h2 { font-size: 20px; }
+            .nft-viewer h2 { font-size: 18px; }
             .nft-card img { max-width: 120px; }
             .nft-card p { font-size: 12px; }
             .nft-card input { font-size: 10px; }
@@ -1452,17 +1448,17 @@
         }
 
         async function updateWalletAddress() {
-    if (!accounts || accounts.length === 0) {
-        document.getElementById('walletAddress').innerText = 'Not connected';
-        document.getElementById('mintBtn').disabled = true;
-    } else {
-        const shortAddress = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
-        document.getElementById('walletAddress').innerText = shortAddress;
-        document.getElementById('mintBtn').disabled = false;
-    }
-}
+            if (!accounts || accounts.length === 0) {
+                document.getElementById('walletAddress').innerText = 'Not connected';
+                document.getElementById('mintBtn').disabled = true;
+            } else {
+                const shortAddress = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                document.getElementById('walletAddress').innerText = shortAddress;
+                document.getElementById('mintBtn').disabled = false;
+            }
+        }
 
-function enableInputs(enable) {
+        function enableInputs(enable) {
     const inputs = document.querySelectorAll('select, button:not(#connectWallet)');
     inputs.forEach(input => {
         input.disabled = !enable;
@@ -1472,25 +1468,21 @@ function enableInputs(enable) {
 
 function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let y = 0; y < gridSize; y++) {
-        for (let x = 0; x < gridSize; x++) {
-            let color = colors.default;
-            if (x === 3 && y === 3) color = colors.center;
-            else if (x === 2 && y === 2) color = colors.corner1;
-            else if (x === 2 && y === 4) color = colors.corner2;
-            else if (x === 4 && y === 2) color = colors.corner3;
-            else if (x === 4 && y === 4) color = colors.corner4;
-
-            ctx.fillStyle = color;
-            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-            ctx.strokeStyle = colors.border;
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    for (let row = 1; row <= gridSize; row++) {
+        for (let col = 1; col <= gridSize; col++) {
+            let fillColor = colors.default;
+            if (row === 3 && col === 3) fillColor = colors.center;
+            else if (row === 2 && col === 2) fillColor = colors.corner1;
+            else if (row === 2 && col === 4) fillColor = colors.corner2;
+            else if (row === 4 && col === 2) fillColor = colors.corner3;
+            else if (row === 4 && col === 4) fillColor = colors.corner4;
+            ctx.fillStyle = fillColor || '#1C2526';
+            ctx.fillRect((col - 1) * cellSize, (row - 1) * cellSize, cellSize, cellSize);
         }
     }
-    ctx.strokeStyle = colors.border;
-    ctx.lineWidth = 8;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+    ctx.strokeStyle = colors.border || '#FF0000';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
 
 function updateGrid() {
@@ -1517,13 +1509,19 @@ function randomizeAttributes() {
         return availableColors[Math.floor(Math.random() * availableColors.length)];
     };
 
-    colors.center = getRandomColor(soilColors);
-    colors.corner1 = getRandomColor(petColors);
-    colors.corner2 = getRandomColor(vegetationColors);
-    colors.corner3 = getRandomColor(structureColors);
-    colors.corner4 = getRandomColor(artifactColors);
-    colors.border = getRandomColor(borderColors);
-    colors.default = getRandomColor(terrainColors, [colors.center, colors.corner1, colors.corner2, colors.corner3, colors.corner4, colors.border]);
+    colors.default = getRandomColor(terrainColors);
+    const usedColors = [colors.default];
+    colors.center = getRandomColor(soilColors, usedColors);
+    usedColors.push(colors.center);
+    colors.corner1 = getRandomColor(petColors, usedColors);
+    usedColors.push(colors.corner1);
+    colors.corner2 = getRandomColor(vegetationColors, usedColors);
+    usedColors.push(colors.corner2);
+    colors.corner3 = getRandomColor(structureColors, usedColors);
+    usedColors.push(colors.corner3);
+    colors.corner4 = getRandomColor(artifactColors, usedColors);
+    usedColors.push(colors.corner4);
+    colors.border = getRandomColor(borderColors, usedColors);
 
     document.getElementById('centerColor').value = colors.center;
     document.getElementById('corner1Color').value = colors.corner1;
