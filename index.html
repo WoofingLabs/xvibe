@@ -5,17 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X Layer Vibe</title>
     <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Montserrat', Arial, sans-serif;
             background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
-            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
-            padding: 30px;
+            padding: 20px;
+            min-height: 100vh;
             color: #e0e0e0;
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
+            width: 100%;
             background: #1f1f1f;
             padding: 25px;
             border-radius: 12px;
@@ -23,11 +28,23 @@
         }
         h1 {
             text-align: center;
-            font-size: 28px;
-            margin-bottom: 25px;
+            font-size: 36px;
+            margin-bottom: 20px;
             color: #ffd700;
             text-transform: uppercase;
             letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        .wallet-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .wallet-info {
+            font-size: 16px;
+            color: #cccccc;
         }
         .section {
             margin-bottom: 25px;
@@ -37,7 +54,7 @@
             margin-bottom: 8px;
             font-size: 14px;
             font-weight: bold;
-            color: #cccccc;
+            color: #ffd700;
         }
         select {
             width: 100%;
@@ -65,11 +82,20 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: transform 0.2s, background 0.3s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         button:hover {
             background: linear-gradient(45deg, #ffaa00, #ffd700);
             transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        button.loading {
+            opacity: 0.7;
+            pointer-events: none;
         }
         .controls {
             display: grid;
@@ -88,10 +114,6 @@
             text-align: center;
             color: #ff5555;
         }
-        .disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
         #gridCanvas {
             width: 100%;
             max-width: 320px;
@@ -100,6 +122,7 @@
             margin: 0 auto 25px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+            background-color: #fff;
         }
         .action-buttons {
             display: flex;
@@ -107,11 +130,45 @@
             gap: 15px;
             margin-bottom: 25px;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: #fff;
+            max-width: 350px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .modal-content p {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            background: #ffd700;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
         .nft-viewer {
             margin-top: 30px;
         }
         .nft-viewer h2 {
-            font-size: 20px;
+            font-size: 24px;
             text-align: center;
             margin-bottom: 15px;
             color: #ffd700;
@@ -143,14 +200,37 @@
             margin: 8px 0;
             color: #cccccc;
         }
+        .nft-card input {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            border: 1px solid #ffd700;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 28px; }
+            .controls { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+            label { font-size: 12px; }
+            select { font-size: 12px; padding: 6px; }
+            button { font-size: 14px; padding: 8px 12px; }
+            .wallet-info { font-size: 14px; }
+            .modal-content { max-width: 90%; padding: 15px; }
+            .nft-viewer h2 { font-size: 20px; }
+            .nft-card img { max-width: 120px; }
+            .nft-card p { font-size: 12px; }
+            .nft-card input { font-size: 10px; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>X Layer Vibe</h1>
-        <div class="section">
-            <button id="connectWallet">Connect Wallet</button>
-            <div id="walletStatus" class="status">Not Connected</div>
+        <div class="wallet-section">
+            <div class="wallet-info">Wallet: <span id="walletAddress">Not connected</span></div>
+            <button id="connectWallet" class="action-btn">Connect Wallet</button>
         </div>
         <div class="section">
             <canvas id="gridCanvas" width="320" height="320"></canvas>
@@ -542,9 +622,9 @@
                 </div>
             </div>
             <div class="action-buttons">
-                <button id="randomizeBtn" onclick="randomizeAttributes()">Randomize</button>
-                <button id="downloadBtn" onclick="downloadGrid()">Download Image</button>
-                <button id="mintBtn" onclick="mintNFT()" disabled>Mint NFT (Free)</button>
+                <button id="randomizeBtn" class="action-btn" onclick="randomizeAttributes()">Randomize</button>
+                <button id="downloadBtn" class="action-btn" onclick="downloadGrid()">Download Image</button>
+                <button id="mintBtn" class="action-btn" onclick="mintNFT()" disabled>Mint NFT (Free)</button>
             </div>
             <div id="transactionStatus" class="status"></div>
         </div>
@@ -552,18 +632,255 @@
             <h2>Your X Layer Vibe NFTs</h2>
             <div id="nftList"></div>
         </div>
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <p id="modalMessage"></p>
+                <button onclick="closeModal()">OK</button>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
         let web3, accounts, contract;
         const CONTRACT_ADDRESS = '0xa59215293170738Cfff4B3D404F5CB0D1621d29b';
         const MINT_PRICE = '0';
-
         const CONTRACT_ABI = [
             {
+                "inputs": [],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "anonymous": false,
                 "inputs": [
-                    {"internalType": "string", "name": "uri", "type": "string"},
-                    {"internalType": "string[]", "name": "attributes", "type": "string[]"}
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "approved",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Approval",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "operator",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "bool",
+                        "name": "approved",
+                        "type": "bool"
+                    }
+                ],
+                "name": "ApprovalForAll",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "previousOwner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "newOwner",
+                        "type": "address"
+                    }
+                ],
+                "name": "OwnershipTransferred",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Transfer",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "addressMintedBalance",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "approve",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    }
+                ],
+                "name": "balanceOf",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "cost",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getApproved",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "operator",
+                        "type": "address"
+                    }
+                ],
+                "name": "isApprovedForAll",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "maxSupply",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "uri",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string[]",
+                        "name": "attributes",
+                        "type": "string[]"
+                    }
                 ],
                 "name": "mintNFT",
                 "outputs": [],
@@ -572,30 +889,340 @@
             },
             {
                 "inputs": [
-                    {"internalType": "address", "name": "_owner", "type": "address"}
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
                 ],
-                "name": "walletOfOwner",
+                "name": "mintedCount",
                 "outputs": [
-                    {"internalType": "uint256[]", "name": "", "type": "uint256[]"}
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "owner",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
                 ],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
                 "inputs": [
-                    {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "uri",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "attributes",
+                        "type": "bytes32"
+                    }
+                ],
+                "name": "ownerMintWithData",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "ownerOf",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "renounceOwnership",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "safeTransferFrom",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bytes",
+                        "name": "_data",
+                        "type": "bytes"
+                    }
+                ],
+                "name": "safeTransferFrom",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "operator",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "_approved",
+                        "type": "bool"
+                    }
+                ],
+                "name": "setApprovalForAll",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "_newCost",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setCost",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "bytes4",
+                        "name": "interfaceId",
+                        "type": "bytes4"
+                    }
+                ],
+                "name": "supportsInterface",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "index",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "tokenByIndex",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "index",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "tokenOfOwnerByIndex",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
                 ],
                 "name": "tokenURI",
                 "outputs": [
-                    {"internalType": "string", "name": "", "type": "string"}
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
                 ],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
                 "inputs": [
-                    {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
-                    {"internalType": "string", "name": "newTokenURI", "type": "string"}
+                    {
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "transferFrom",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "newOwner",
+                        "type": "address"
+                    }
+                ],
+                "name": "transferOwnership",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "newTokenURI",
+                        "type": "string"
+                    }
                 ],
                 "name": "updateTokenMetadata",
                 "outputs": [],
@@ -604,11 +1231,40 @@
             },
             {
                 "inputs": [
-                    {"internalType": "uint256", "name": "_newCost", "type": "uint256"}
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
                 ],
-                "name": "setCost",
-                "outputs": [],
-                "stateMutability": "nonpayable",
+                "name": "usedAttributeCombinations",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_owner",
+                        "type": "address"
+                    }
+                ],
+                "name": "walletOfOwner",
+                "outputs": [
+                    {
+                        "internalType": "uint256[]",
+                        "name": "",
+                        "type": "uint256[]"
+                    }
+                ],
+                "stateMutability": "view",
                 "type": "function"
             },
             {
@@ -616,27 +1272,6 @@
                 "name": "withdraw",
                 "outputs": [],
                 "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {"internalType": "address", "name": "to", "type": "address"},
-                    {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
-                    {"internalType": "string", "name": "uri", "type": "string"},
-                    {"internalType": "bytes32", "name": "attributes", "type": "bytes32"}
-                ],
-                "name": "ownerMintWithData",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [
-                    {"internalType": "uint256", "name": "", "type": "uint256"}
-                ],
-                "stateMutability": "view",
                 "type": "function"
             }
         ];
@@ -696,8 +1331,8 @@
             '#0000FF', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED', '#5F9EA0', '#B0C4DE', '#4682B4', '#00CED1',
             '#87CEFA', '#6495ED', '#5F9EA0', '#B0C4DE', '#4682B4', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED',
             '#5F9EA0', '#B0C4DE', '#4682B4', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED', '#5F9EA0', '#B0C4DE',
-            '#4B0082', '#483D8B', '#6A5ACD', '#00BFFF', '#87CEFA', '#ADD8E6', '#B0E0E6', '#00FFFF', '#40E0D0', '#4682B4',
-            '#0000FF', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED', '#5F9EA0', '#B0C4DE', '#4682B4', '#00CED1'
+            '#4682B4', '#4169E1', '#1E90FF', '#00B7EB', '#87CEEB', '#6495ED', '#5F9EA0', '#B0C4DE', '#4682B4', '#00CED1',
+            '#4B0082', '#483D8B', '#6A5ACD', '#00BFFF', '#87CEFA', '#ADD8E6', '#B0E0E6', '#00FFFF', '#40E0D0', '#4682B4'
         ];
 
         const artifactColors = [
@@ -724,44 +1359,37 @@
             '#A52A2A', '#FF7F50', '#FFF8DC', '#90EE90', '#87CEEB', '#BA55D3', '#FF6EB4', '#48D1CC', '#F8F8FF', '#4682B4'
         ];
 
-                const colorNames = [
-            // Soil Types (0-49)
+        const colorNames = [
             'FertileLoam', 'VolcanicAsh', 'RedClay', 'SandyLoam', 'DesertSoil', 'SiennaEarth', 'OchreBed', 'PeatMoss', 'BlackLoam', 'TundraSoil',
             'SavannaDust', 'AridCrust', 'MudflatClay', 'Laterite', 'ChalkySoil', 'SiltBed', 'LoessLayer', 'Podzol', 'TerraRossa', 'BogSoil',
             'MarshMud', 'AlluvialSoil', 'HumusLayer', 'GrittyLoam', 'ClayLoam', 'SandyClay', 'RockySoil', 'GravelBed', 'SiltyClay', 'Topsoil',
             'Subsoil', 'Regolith', 'IronSoil', 'SaltyCrust', 'AlkalineSoil', 'CalcareousSoil', 'OrganicSoil', 'MineralSoil', 'FossilBed', 'ErodedSoil',
             'SaddleBrown', 'Chocolate', 'Brown', 'SandyBrown', 'BurlyWood', 'Peru', 'RosyBrown', 'Tan', 'Wheat', 'GoldenRod',
-            // Guardian Pets (50-99)
             'MysticWolf', 'DesertScorpion', 'CrimsonHawk', 'SandSerpent', 'EmberFox', 'CoralViper', 'BloodPanther', 'DuneLizard', 'FireBeetle', 'AshenOwl',
             'SableJackal', 'CopperCobra', 'FlameRaven', 'SaffronFalcon', 'RubyGecko', 'ObsidianWolf', 'QuartzScorpion', 'GarnetHawk', 'TopazSerpent', 'CitrineFox',
             'OpalViper', 'OnyxPanther', 'AgateLizard', 'JasperBeetle', 'AmberOwl', 'CorundumJackal', 'TurquoiseCobra', 'AmethystRaven', 'PeridotFalcon', 'CarnelianGecko',
             'JetWolf', 'MalachiteScorpion', 'HematiteHawk', 'ZirconSerpent', 'SpinelFox', 'AquamarineViper', 'BerylPanther', 'ChalcedonyLizard', 'SardonyxBeetle', 'MoonstoneOwl',
             'RedPhoenix', 'PinkDragon', 'DarkRuby', 'BlazeTiger', 'SalmonSerpent', 'RoseFalcon', 'PaleCoral', 'MagentaWyrm', 'DeepPink', 'FuchsiaBeast',
-            // Vegetation (100-149)
             'WhisperingPines', 'EmeraldFerns', 'ShadowMoss', 'GlowingCacti', 'JadeVines', 'MysticIvy', 'LushGrass', 'SpectralReeds', 'NeonOrchids', 'TwilightThorns',
             'StarlitFerns', 'DuskMoss', 'RadiantCacti', 'CrystalVines', 'EnchantedIvy', 'MoonlitGrass', 'PhantomReeds', 'AstralOrchids', 'GlimmerThorns', 'EtherealFerns',
             'NightshadeMoss', 'LuminousCacti', 'SpectralVines', 'StarbornIvy', 'CelestialGrass', 'MysticReeds', 'EclipseOrchids', 'DawnThorns', 'AuroraFerns', 'VoidMoss',
             'PrismCacti', 'NovaVines', 'CosmicIvy', 'StellarGrass', 'GalacticReeds', 'LunarOrchids', 'SolarThorns', 'CometFerns', 'AbyssalMoss', 'MeteorCacti',
             'LimeSprout', 'ChartreuseBloom', 'TurquoiseVine', 'AquaFern', 'SeafoamIvy', 'PaleGreen', 'GreenYellow', 'SpringMint', 'LawnGreen', 'MintGlow',
-            // Structures (150-199)
             'AncientRuins', 'CrystalTower', 'SkyFortress', 'ObsidianKeep', 'StarlitTemple', 'MoonstoneHall', 'CoralSpire', 'MysticShrine', 'AzureCitadel', 'SapphireBastion',
             'LunarKeep', 'CelestialTower', 'StellarFortress', 'OpalSanctuary', 'EclipseRuins', 'NovaSpire', 'CometCitadel', 'AstralKeep', 'CosmicTemple', 'GalacticHall',
             'NebulaShrine', 'VoidBastion', 'MeteorTower', 'AuroraFortress', 'StarbornKeep', 'SolarSpire', 'LunarCitadel', 'AbyssalTemple', 'PrismRuins', 'DawnTower',
             'DuskBastion', 'TwilightKeep', 'GlimmerSpire', 'PhantomCitadel', 'SpectralShrine', 'EtherealFortress', 'RadiantTower', 'ShadowKeep', 'CrystalBastion', 'MoonlitSpire',
             'BlueMonolith', 'IndigoCitadel', 'DarkSlate', 'SlateBlue', 'DeepSky', 'LightSky', 'PaleBlue', 'PowderBlue', 'CyanSpire', 'TurquoiseKeep',
-            // Artifacts (200-249)
             'EnchantedRelic', 'StarforgedBlade', 'SunkenAmulet', 'MysticOrb', 'CelestialRune', 'GoldenScepter', 'EclipseTalisman', 'LunarCrown', 'SolarGem', 'AstralShard',
             'CometPendant', 'NovaRelic', 'StarlitCharm', 'CosmicTablet', 'GalacticCrest', 'MeteorStone', 'AuroraCrystal', 'DawnSigil', 'DuskMedallion', 'TwilightOrb',
             'GlimmerRune', 'PhantomAmulet', 'SpectralScepter', 'EtherealGem', 'RadiantShard', 'ShadowRelic', 'CrystalTalisman', 'MoonlitCrest', 'StarbornTablet', 'AbyssalRune',
             'PrismPendant', 'NebulaStone', 'VoidCrystal', 'LunarSigil', 'SolarMedallion', 'CometCharm', 'AstralOrb', 'GalacticScepter', 'MeteorGem', 'AuroraRelic',
             'YellowStar', 'PeachPuff', 'NavajoWhite', 'WheatGlow', 'LemonChiffon', 'CornSilk', 'LightYellow', 'SeaShell', 'LavenderBlush', 'MistyRose',
-            // Terrain Features (250-299)
             'CrystalAbyss', 'ShadowVale', 'MidnightCrest', 'UmberDepth', 'VolcanicShade', 'ClayDusk', 'ObsidianTide', 'SootCanyon', 'OchreHollow', 'SlateLagoon',
             'DarkHaze', 'AshenRift', 'RustMire', 'SandyGloom', 'SiltShadow', 'LoessDrift', 'BogMist', 'HumusVeil', 'GrittyShade', 'RockyAbyss',
             'EbonyCrater', 'CharcoalVale', 'TawnyRavine', 'LateriteVoid', 'PodzolGloom', 'SaltyDepth', 'AlkalineMist', 'OrganicDusk', 'MineralHaze', 'FossilCrest',
             'IronShroud', 'PeatVortex', 'RegolithTide', 'GravelShade', 'ClayLoamDrift', 'TopsoilAbyss', 'SubsoilCanyon', 'SiltyVeil', 'MarshGloom', 'SiennaRift',
             'OnyxHollow', 'DarkSlate', 'TundraShadow', 'ChalkyDepth', 'AlluvialMist', 'ErodedVale', 'LoamCrater', 'SiltCrest', 'MudflatTide', 'PeatyDrift',
-            // Border Glow (300-349)
             'CrimsonVortex', 'StarforgedFlame', 'SolarBurst', 'EmeraldPulse', 'SapphireVoid', 'AmethystNebula', 'PinkCosmos', 'AquaRadiance', 'StarlightGlow', 'ShadowVeil',
             'ScarletAbyss', 'BlazingCoral', 'GoldenHaze', 'LimeBeacon', 'SkywardGlint', 'VioletMist', 'FuchsiaFlare', 'TurquoiseShine', 'LunarMist', 'DuskGlimmer',
             'FirebrickCore', 'EmberGlow', 'LemonSpark', 'ChartreuseWave', 'AzureFlame', 'PurpleHaze', 'MagentaStar', 'TealAurora', 'SilverSheen', 'SlateDepth',
@@ -769,13 +1397,25 @@
             'BrownCosmos', 'PeachRadiance', 'IvoryFlare', 'MintShimmer', 'LightBlueVortex', 'OrchidPulse', 'HotPinkGleam', 'AquamarineWave', 'SnowyMist', 'SteelBlueGlow'
         ];
 
+        function showModal(message) {
+            document.getElementById('modalMessage').innerHTML = message;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
         function showStatus(message) {
             document.getElementById('transactionStatus').innerText = message;
         }
 
         async function connectWallet() {
+            const connectButton = document.getElementById('connectWallet');
+            connectButton.classList.add('loading');
             if (!window.ethereum) {
-                showStatus('Please install MetaMask.');
+                showModal('No wallet detected. Please install <a href="https://metamask.io" target="_blank">MetaMask</a>.');
+                connectButton.classList.remove('loading');
                 return;
             }
             try {
@@ -800,233 +1440,289 @@
                     }
                 }
                 contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-                showStatus(`Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
+                showModal(`Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
+                updateWalletAddress();
                 enableInputs(true);
                 fetchOwnedNFTs();
             } catch (error) {
-                showStatus('Connection failed: ' + error.message);
+                showModal('Connection failed: ' + error.message);
+            } finally {
+                connectButton.classList.remove('loading');
             }
         }
 
-        function enableInputs(enabled) {
-            document.getElementById('centerColor').disabled = !enabled;
-            document.getElementById('corner1Color').disabled = !enabled;
-            document.getElementById('corner2Color').disabled = !enabled;
-            document.getElementById('corner3Color').disabled = !enabled;
-            document.getElementById('corner4Color').disabled = !enabled;
-            document.getElementById('defaultColor').disabled = !enabled;
-            document.getElementById('borderColor').disabled = !enabled;
-            document.getElementById('randomizeBtn').disabled = !enabled;
-            document.getElementById('downloadBtn').disabled = !enabled;
-            document.getElementById('mintBtn').disabled = !enabled;
-        }
+        async function updateWalletAddress() {
+    if (!accounts || accounts.length === 0) {
+        document.getElementById('walletAddress').innerText = 'Not connected';
+        document.getElementById('mintBtn').disabled = true;
+    } else {
+        const shortAddress = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+        document.getElementById('walletAddress').innerText = shortAddress;
+        document.getElementById('mintBtn').disabled = false;
+    }
+}
 
-        function randomizeAttributes() {
-            const usedColors = new Set();
+function enableInputs(enable) {
+    const inputs = document.querySelectorAll('select, button:not(#connectWallet)');
+    inputs.forEach(input => {
+        input.disabled = !enable;
+        input.classList.toggle('disabled', !enable);
+    });
+}
 
-            // 优先选择 Terrain Feature 颜色，确保其独特性
-            colors.default = terrainColors[Math.floor(Math.random() * terrainColors.length)];
-            usedColors.add(colors.default);
+function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+            let color = colors.default;
+            if (x === 3 && y === 3) color = colors.center;
+            else if (x === 2 && y === 2) color = colors.corner1;
+            else if (x === 2 && y === 4) color = colors.corner2;
+            else if (x === 4 && y === 2) color = colors.corner3;
+            else if (x === 4 && y === 4) color = colors.corner4;
 
-            // 从剩余颜色中选择其他属性颜色
-            const selectColor = (colorArray) => {
-                const availableColors = colorArray.filter(color => !usedColors.has(color));
-                if (availableColors.length === 0) return colorArray[Math.floor(Math.random() * colorArray.length)];
-                const index = Math.floor(Math.random() * availableColors.length);
-                const selectedColor = availableColors[index];
-                usedColors.add(selectedColor);
-                return selectedColor;
-            };
-
-            colors.center = selectColor(soilColors);
-            colors.corner1 = selectColor(petColors);
-            colors.corner2 = selectColor(vegetationColors);
-            colors.corner3 = selectColor(structureColors);
-            colors.corner4 = selectColor(artifactColors);
-            colors.border = selectColor(borderColors);
-
-            // 更新下拉菜单
-            document.getElementById('centerColor').value = colors.center;
-            document.getElementById('corner1Color').value = colors.corner1;
-            document.getElementById('corner2Color').value = colors.corner2;
-            document.getElementById('corner3Color').value = colors.corner3;
-            document.getElementById('corner4Color').value = colors.corner4;
-            document.getElementById('defaultColor').value = colors.default;
-            document.getElementById('borderColor').value = colors.border;
-
-            drawGrid();
-            checkAttributeConflict();
-        }
-
-        function updateGrid() {
-            colors.center = document.getElementById('centerColor').value;
-            colors.corner1 = document.getElementById('corner1Color').value;
-            colors.corner2 = document.getElementById('corner2Color').value;
-            colors.corner3 = document.getElementById('corner3Color').value;
-            colors.corner4 = document.getElementById('corner4Color').value;
-            colors.default = document.getElementById('defaultColor').value;
-            colors.border = document.getElementById('borderColor').value;
-            drawGrid();
-            checkAttributeConflict();
-        }
-
-        function drawGrid() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let row = 1; row <= gridSize; row++) {
-                for (let col = 1; col <= gridSize; col++) {
-                    let fillColor = colors.default;
-                    if (row === 3 && col === 3) fillColor = colors.center;
-                    else if (row === 2 && col === 2) fillColor = colors.corner1;
-                    else if (row === 2 && col === 4) fillColor = colors.corner2;
-                    else if (row === 4 && col === 2) fillColor = colors.corner3;
-                    else if (row === 4 && col === 4) fillColor = colors.corner4;
-                    ctx.fillStyle = fillColor || '#1C2526';
-                    ctx.fillRect((col - 1) * cellSize, (row - 1) * cellSize, cellSize, cellSize);
-                }
-            }
-            ctx.strokeStyle = colors.border || '#FF0000';
+            ctx.fillStyle = color;
+            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            ctx.strokeStyle = colors.border;
             ctx.lineWidth = 2;
-            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+    }
+    ctx.strokeStyle = colors.border;
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+}
+
+function updateGrid() {
+    colors.center = document.getElementById('centerColor').value;
+    colors.corner1 = document.getElementById('corner1Color').value;
+    colors.corner2 = document.getElementById('corner2Color').value;
+    colors.corner3 = document.getElementById('corner3Color').value;
+    colors.corner4 = document.getElementById('corner4Color').value;
+    colors.default = document.getElementById('defaultColor').value;
+    colors.border = document.getElementById('borderColor').value;
+
+    const defaultSelect = document.getElementById('defaultColor');
+    const usedColors = [colors.center, colors.corner1, colors.corner2, colors.corner3, colors.corner4, colors.border];
+    for (let i = 0; i < defaultSelect.options.length; i++) {
+        const optionColor = defaultSelect.options[i].value;
+        defaultSelect.options[i].disabled = usedColors.includes(optionColor);
+    }
+    drawGrid();
+}
+
+function randomizeAttributes() {
+    const getRandomColor = (colorArray, exclude = []) => {
+        const availableColors = colorArray.filter(c => !exclude.includes(c));
+        return availableColors[Math.floor(Math.random() * availableColors.length)];
+    };
+
+    colors.center = getRandomColor(soilColors);
+    colors.corner1 = getRandomColor(petColors);
+    colors.corner2 = getRandomColor(vegetationColors);
+    colors.corner3 = getRandomColor(structureColors);
+    colors.corner4 = getRandomColor(artifactColors);
+    colors.border = getRandomColor(borderColors);
+    colors.default = getRandomColor(terrainColors, [colors.center, colors.corner1, colors.corner2, colors.corner3, colors.corner4, colors.border]);
+
+    document.getElementById('centerColor').value = colors.center;
+    document.getElementById('corner1Color').value = colors.corner1;
+    document.getElementById('corner2Color').value = colors.corner2;
+    document.getElementById('corner3Color').value = colors.corner3;
+    document.getElementById('corner4Color').value = colors.corner4;
+    document.getElementById('defaultColor').value = colors.default;
+    document.getElementById('borderColor').value = colors.border;
+
+    updateGrid();
+}
+
+function downloadGrid() {
+    const link = document.createElement('a');
+    link.download = 'x-layer-vibe.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
+async function mintNFT() {
+    if (!web3 || !contract || !accounts) {
+        showModal('Please connect your wallet first!');
+        return;
+    }
+
+    const mintButton = document.getElementById('mintBtn');
+    mintButton.classList.add('loading');
+    mintButton.disabled = true;
+    showStatus('');
+
+    try {
+        const balance = await web3.eth.getBalance(accounts[0]);
+        if (balance < MINT_PRICE) {
+            showModal('Insufficient OKB balance to mint.');
+            mintButton.classList.remove('loading');
+            mintButton.disabled = false;
+            return;
         }
 
-        function downloadGrid() {
-            const link = document.createElement('a');
-            link.download = 'x-layer-vibe.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+        showModal('Checking attribute uniqueness...');
+        const attributes = [
+            document.getElementById('centerColor').options[document.getElementById('centerColor').selectedIndex].text,
+            document.getElementById('corner1Color').options[document.getElementById('corner1Color').selectedIndex].text,
+            document.getElementById('corner2Color').options[document.getElementById('corner2Color').selectedIndex].text,
+            document.getElementById('corner3Color').options[document.getElementById('corner3Color').selectedIndex].text,
+            document.getElementById('corner4Color').options[document.getElementById('corner4Color').selectedIndex].text,
+            document.getElementById('defaultColor').options[document.getElementById('defaultColor').selectedIndex].text,
+            document.getElementById('borderColor').options[document.getElementById('borderColor').selectedIndex].text
+        ];
+        const attrHash = web3.utils.keccak256(web3.eth.abi.encodeParameter('string[]', attributes));
+        const isUsed = await contract.methods.usedAttributeCombinations(attrHash).call();
+        if (isUsed) {
+            showModal('This attribute combination has already been minted. Please choose a different combination.');
+            mintButton.classList.remove('loading');
+            mintButton.disabled = false;
+            return;
         }
 
-        function checkAttributeConflict() {
-            const customColors = [colors.center, colors.corner1, colors.corner2, colors.corner3, colors.corner4, colors.border];
-            // 确保 Terrain Feature 颜色与特殊格子和边框颜色不同
-            if (customColors.includes(colors.default)) {
-                showStatus('Terrain Feature color must not match other attributes. Please select a different color.');
-                document.getElementById('mintBtn').disabled = true;
-                return false;
+        showModal('Preparing to mint NFT...');
+        let countdown = 5;
+        showModal(`Minting will start in <span id="countdown">${countdown}</span> seconds...`);
+        const countdownElement = document.getElementById('countdown');
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                proceedWithMinting(attributes);
             }
-            // 确保 7 个属性名称唯一
-            const attributes = [
-                colorNames[soilColors.indexOf(colors.center)] + '1',
-                colorNames[petColors.indexOf(colors.corner1) + 50] + '2',
-                colorNames[vegetationColors.indexOf(colors.corner2) + 100] + '3',
-                colorNames[structureColors.indexOf(colors.corner3) + 150] + '4',
-                colorNames[artifactColors.indexOf(colors.corner4) + 200] + '5',
-                colorNames[terrainColors.indexOf(colors.default) + 250] + '6',
-                colorNames[borderColors.indexOf(colors.border) + 300] + '7'
-            ];
-            const uniqueAttributes = new Set(attributes);
-            if (uniqueAttributes.size !== 7) {
-                showStatus('Attributes must not be repeated. Please select different attributes.');
-                document.getElementById('mintBtn').disabled = true;
-                return false;
-            }
-            showStatus('');
-            document.getElementById('mintBtn').disabled = false;
-            return true;
-        }
+        }, 1000);
+    } catch (error) {
+        showModal('Minting failed: ' + error.message);
+        mintButton.classList.remove('loading');
+        mintButton.disabled = false;
+    }
+}
 
-        async function generateURI() {
-            const totalSupply = await contract.methods.totalSupply().call();
-            const imageData = canvas.toDataURL('image/png');
-            const attributes = [
-                {
-                    trait_type: 'Soil Type',
-                    value: colorNames[soilColors.indexOf(colors.center)]
-                },
-                {
-                    trait_type: 'Guardian Pet',
-                    value: colorNames[petColors.indexOf(colors.corner1) + 50]
-                },
-                {
-                    trait_type: 'Vegetation Type',
-                    value: colorNames[vegetationColors.indexOf(colors.corner2) + 100]
-                },
-                {
-                    trait_type: 'Structure Type',
-                    value: colorNames[structureColors.indexOf(colors.corner3) + 150]
-                },
-                {
-                    trait_type: 'Mystic Artifact',
-                    value: colorNames[artifactColors.indexOf(colors.corner4) + 200]
-                },
-                {
-                    trait_type: 'Terrain Feature',
-                    value: colorNames[terrainColors.indexOf(colors.default) + 250]
-                },
-                {
-                    trait_type: 'Border Glow',
-                    value: colorNames[borderColors.indexOf(colors.border) + 300]
-                }
-            ];
-            const metadata = {
-                name: `X Layer Vibe #${parseInt(totalSupply) + 1}`,
-                description: 'A unique NFT from the X Layer Vibe collection, representing a vibrant 5x5 grid with a custom border glow.',
-                image: imageData,
-                attributes: attributes
-            };
-            const metadataString = JSON.stringify(metadata);
-            const uri = `data:application/json;base64,${btoa(metadataString)}`;
-            return { uri, attributes: attributes.map(attr => `${attr.trait_type}:${attr.value}`) };
-        }
-
-        async function mintNFT() {
-            if (!contract || !accounts) {
-                showStatus('Please connect your wallet first.');
-                return;
-            }
-            if (!checkAttributeConflict()) {
-                return;
-            }
-            try {
-                const { uri, attributes } = await generateURI();
-                const attributeHash = web3.utils.keccak256(attributes.join(''));
-                const isUsed = await contract.methods.usedAttributeCombinations(attributeHash).call();
-                if (isUsed) {
-                    showStatus('This combination of attributes has already been used. Try a different combination.');
-                    return;
-                }
-                const tx = await contract.methods.mintNFT(uri, attributes).send({
-                    from: accounts[0],
-                    value: MINT_PRICE
-                });
-                showStatus(`NFT minted successfully! Transaction: ${tx.transactionHash}`);
-                fetchOwnedNFTs();
-            } catch (error) {
-                showStatus('Minting failed: ' + error.message);
-            }
-        }
-
-        async function fetchOwnedNFTs() {
-            if (!contract || !accounts) return;
-            try {
-                const tokenIds = await contract.methods.walletOfOwner(accounts[0]).call();
-                const nftList = document.getElementById('nftList');
-                nftList.innerHTML = '';
-                if (tokenIds.length === 0) {
-                    nftList.innerHTML = '<p>You do not own any X Layer Vibe NFTs yet.</p>';
-                    return;
-                }
-                for (const tokenId of tokenIds) {
-                    const uri = await contract.methods.tokenURI(tokenId).call();
-                    const metadata = JSON.parse(atob(uri.replace('data:application/json;base64,', '')));
-                    const nftCard = document.createElement('div');
-                    nftCard.className = 'nft-card';
-                    nftCard.innerHTML = `
-                        <img src="${metadata.image}" alt="NFT ${tokenId}">
-                        <p>Token ID: ${tokenId}</p>
-                        <p>${metadata.name}</p>
-                    `;
-                    nftList.appendChild(nftCard);
-                }
-            } catch (error) {
-                showStatus('Failed to fetch NFTs: ' + error.message);
-            }
-        }
-
-        document.getElementById('connectWallet').addEventListener('click', connectWallet);
-        window.onload = () => {
-            randomizeAttributes();
+async function proceedWithMinting(attributes) {
+    const mintButton = document.getElementById('mintBtn');
+    try {
+        const imageData = canvas.toDataURL('image/png').split(',')[1];
+        const totalSupply = await contract.methods.totalSupply().call();
+        const metadata = {
+            name: `X Layer Vibe #${parseInt(totalSupply) + 1}`,
+            description: 'A unique X Layer Vibe NFT with a grid-based design.',
+            image: `data:image/png;base64,${imageData}`,
+            attributes: [
+                { trait_type: 'Soil Type (3,3)', value: attributes[0] },
+                { trait_type: 'Guardian Pet (2,2)', value: attributes[1] },
+                { trait_type: 'Vegetation Type (2,4)', value: attributes[2] },
+                { trait_type: 'Structure Type (4,2)', value: attributes[3] },
+                { trait_type: 'Mystic Artifact (4,4)', value: attributes[4] },
+                { trait_type: 'Terrain Feature', value: attributes[5] },
+                { trait_type: 'Border Glow', value: attributes[6] }
+            ]
         };
+        const tokenURI = `data:application/json;base64,${btoa(JSON.stringify(metadata))}`;
+        showModal('Minting NFT...');
+        await contract.methods.mintNFT(tokenURI, attributes).send({
+            from: accounts[0],
+            value: MINT_PRICE
+        });
+        showModal('NFT minted successfully!');
+        fetchOwnedNFTs();
+    } catch (error) {
+        showModal('Minting failed: ' + error.message);
+    } finally {
+        mintButton.classList.remove('loading');
+        mintButton.disabled = false;
+    }
+}
+
+async function fetchOwnedNFTs() {
+    if (!web3 || !contract || !accounts) {
+        showModal('Please connect your wallet first!');
+        return;
+    }
+    const nftList = document.getElementById('nftList');
+    nftList.innerHTML = '<p>Loading your NFTs...</p>';
+    try {
+        const tokenIds = await contract.methods.walletOfOwner(accounts[0]).call();
+        if (tokenIds.length === 0) {
+            nftList.innerHTML = '<p>You don’t own any X Layer Vibe NFTs yet.</p>';
+            return;
+        }
+        nftList.innerHTML = '';
+        for (const tokenId of tokenIds) {
+            const tokenURI = await contract.methods.tokenURI(tokenId).call();
+            await displayNFT(tokenId, tokenURI);
+        }
+    } catch (error) {
+        showModal('Failed to fetch NFTs: ' + error.message);
+        nftList.innerHTML = '<p>Error loading NFTs.</p>';
+    }
+}
+
+async function displayNFT(tokenId, tokenURI) {
+    const nftList = document.getElementById('nftList');
+    let metadata;
+    if (tokenURI.startsWith('data:application/json;base64,')) {
+        const base64Data = tokenURI.split(',')[1];
+        metadata = JSON.parse(atob(base64Data));
+    } else {
+        metadata = { name: `Token #${tokenId}`, image: 'Unknown' };
+    }
+    const nftDiv = document.createElement('div');
+    nftDiv.className = 'nft-card';
+    nftDiv.innerHTML = `
+        <img src="${metadata.image}" alt="${metadata.name}">
+        <p>${metadata.name} (ID: ${tokenId})</p>
+        <input type="text" id="transferAddress${tokenId}" placeholder="Recipient Address">
+        <button class="action-btn" onclick="transferNFT(${tokenId})">Transfer</button>
+    `;
+    nftList.appendChild(nftDiv);
+}
+
+async function transferNFT(tokenId) {
+    if (!web3 || !contract || !accounts) {
+        showModal('Please connect your wallet first!');
+        return;
+    }
+    const transferAddress = document.getElementById(`transferAddress${tokenId}`).value;
+    if (!web3.utils.isAddress(transferAddress)) {
+        showModal('Invalid Ethereum address!');
+        return;
+    }
+    try {
+        showModal('Transferring NFT...');
+        await contract.methods.safeTransferFrom(accounts[0], transferAddress, tokenId).send({ from: accounts[0] });
+        showModal('NFT transferred successfully!');
+        fetchOwnedNFTs();
+    } catch (error) {
+        showModal('Transfer failed: ' + error.message);
+    }
+}
+
+window.onload = () => {
+    enableInputs(false);
+    updateGrid();
+    if (!window.ethereum) {
+        showModal('No wallet detected. Please install <a href="https://metamask.io" target="_blank">MetaMask</a>.');
+    }
+};
+
+window.ethereum?.on('chainChanged', () => {
+    window.location.reload();
+});
+
+window.ethereum?.on('accountsChanged', (newAccounts) => {
+    accounts = newAccounts;
+    updateWalletAddress();
+    if (newAccounts.length === 0) {
+        enableInputs(false);
+    } else {
+        connectWallet();
+    }
+});
+
+document.getElementById('connectWallet').addEventListener('click', connectWallet);
     </script>
 </body>
 </html>
